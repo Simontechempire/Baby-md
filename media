@@ -1,0 +1,47 @@
+// 🎀 BABY BOT - MEDIA MANAGER | Baby Method 🧸💗
+import fs from "fs";
+import path from "path";
+import axios from "axios";
+
+const MEDIA_PATH = "./media";
+
+export const MEDIA_FILES = {
+  menu: "https://files.catbox.moe/yvgx71.jpg",
+  baby: "https://files.catbox.moe/yvgx71.jpg",
+  logo: "https://files.catbox.moe/yvgx71.jpg"
+};
+
+export function initMedia() {
+  if (!fs.existsSync(MEDIA_PATH)) {
+    fs.mkdirSync(MEDIA_PATH, { recursive: true });
+    console.log("🖼️ media/ folder created");
+  }
+  // Create placeholder
+  const readme = path.join(MEDIA_PATH, "readme.txt");
+  if (!fs.existsSync(readme)) {
+    fs.writeFileSync(readme, "🎀 BABY BOT Media Folder\nPut menu.jpg here or use IMAGE_URL\nImage URL: https://files.catbox.moe/yvgx71.jpg");
+  }
+}
+
+export async function downloadMedia(url, filename) {
+  try {
+    const filePath = path.join(MEDIA_PATH, filename);
+    const res = await axios.get(url, { responseType: "arraybuffer" });
+    fs.writeFileSync(filePath, res.data);
+    console.log(`💗 Downloaded media/${filename}`);
+    return filePath;
+  } catch (e) {
+    console.error(`❌ Media download failed: ${e.message}`);
+    return null;
+  }
+}
+
+export function getMedia(file) {
+  const p = path.join(MEDIA_PATH, file);
+  return fs.existsSync(p) ? p : null;
+}
+
+// Auto init
+initMedia();
+
+export default { initMedia, downloadMedia, getMedia, MEDIA_FILES };
