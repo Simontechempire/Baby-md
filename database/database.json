@@ -1,91 +1,69 @@
-// 🎀 BABY BOT - SINGLE FILE DATABASE | Baby Method 💗
-import fs from "fs";
-
-const DB_PATH = "./database.json";
-
-// 🎀 Default Database Structure
-const DEFAULT_DB = {
-  antilink: {},
-  warnings: {
-    groups: {}
+{
+  "antilink": {},
+  "antibadword": {},
+  "antidelete": {},
+  "warnings": {
+    "groups": {}
   },
-  users: {
-    users: {},
-    banned: [],
-    premium: []
+  "users": {
+    "users": {},
+    "banned": [],
+    "premium": ["2349166265317"],
+    "afk": {}
   },
-  groups: {
-    groups: {},
-    settings: {
-      antilink: false,
-      antibadword: false,
-      antidelete: false,
-      welcome: true,
-      goodbye: true,
-      autobio: false,
-      antibot: false,
-      antiforeign: false
+  "groups": {
+    "groups": {},
+    "anti": {},
+    "badwords": {},
+    "welcome": {},
+    "goodbye": {},
+    "rules": {},
+    "settings": {
+      "antilink": false,
+      "antibadword": false,
+      "antidelete": false,
+      "welcome": true,
+      "goodbye": true,
+      "autobio": false,
+      "antibot": false,
+      "antiforeign": false
     }
   },
-  baby: {
-    simi: false,
-    autolike: true,
-    autoread: true,
-    autoview: true,
-    autotyping: false,
-    autorecording: false,
-    antilink: {},
-    warnings: {},
-    chats: {},
-    couple: {},
-    ship: {},
-    levels: {},
-    afk: {},
-    baby_users: {},
-    settings: {
-      prefix: ".",
-      botName: "BABY BOT",
-      owner: "2349166265317",
-      image: "https://files.catbox.moe/yvgx71.jpg",
-      mode: "public"
+  "baby": {
+    "simi": false,
+    "autolike": true,
+    "autoread": true,
+    "autoview": true,
+    "autotyping": false,
+    "autorecording": false,
+    "active": {},
+    "antilink": {},
+    "warnings": {},
+    "chats": {},
+    "couple": {},
+    "ship": {},
+    "levels": {},
+    "afk": {},
+    "baby_users": {},
+    "cuddles": 0,
+    "kisses": 0,
+    "settings": {
+      "prefix": ".",
+      "botName": "BABY BOT 🎀",
+      "owner": "2349166265317",
+      "ownerName": "Simon tech",
+      "image": "https://files.catbox.moe/yvgx71.jpg",
+      "mode": "public",
+      "version": "1.0.0"
     }
   },
-  session: {},
-  media: {}
-};
-
-// 🎀 Create / Load DB
-export function loadDB() {
-  try {
-    if (!fs.existsSync(DB_PATH)) {
-      fs.writeFileSync(DB_PATH, JSON.stringify(DEFAULT_DB, null, 2));
-      console.log("🧸 database.json created! 💗");
-      return DEFAULT_DB;
-    }
-    const data = JSON.parse(fs.readFileSync(DB_PATH));
-    return { ...DEFAULT_DB, ...data };
-  } catch (e) {
-    console.error("❌ DB Load Error:", e.message);
-    return DEFAULT_DB;
+  "session": {},
+  "media": {},
+  "owners": ["2349166265317"],
+  "bot": {
+    "name": "BABY BOT",
+    "prefix": ".",
+    "mode": "public",
+    "started": "2026-10-20"
   }
 }
-
-// 🎀 Save DB
-export function saveDB(data) {
-  try {
-    fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2));
-    return true;
-  } catch (e) {
-    console.error("❌ DB Save Error:", e.message);
-    return false;
-  }
-}
-
-// 🎀 Auto init folders
-if (!fs.existsSync("./session")) fs.mkdirSync("./session", { recursive: true });
-if (!fs.existsSync("./media")) fs.mkdirSync("./media", { recursive: true });
-
-// 🎀 Create DB on import
-loadDB();
-
-export default { loadDB, saveDB, DEFAULT_DB };
