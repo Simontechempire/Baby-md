@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎀 BABY BOT - Pair Code 💗</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif; }
+  body {
+    background: linear-gradient(135deg, #ffb6e6, #ff8ecf, #ff5bb5);
+    min-height:100vh;
+    display:flex; align-items:center; justify-content:center;
+    padding:20px;
+  }
+  .card {
+    background: white;
+    border-radius: 25px;
+    padding: 30px;
+    max-width: 400px;
+    width: 100%;
+    box-shadow: 0 15px 35px rgba(255,91,181,0.3);
+    text-align:center;
+    border: 3px solid #ff8ecf;
+  }
+  .logo {
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    border: 4px solid #ff5bb5;
+    margin: 0 auto 15px;
+    object-fit: cover;
+  }
+  h1 {
+    color: #ff2d95;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom:5px;
+  }
+  .sub {
+    color:#ff8ecf; font-size:14px; margin-bottom:20px;
+    font-weight:600;
+  }
+  .box {
+    background: #fff0f7;
+    border: 2px dashed #ff8ecf;
+    border-radius:15px;
+    padding:15px;
+    margin:15px 0;
+  }
+  input {
+    width:100%;
+    padding:14px;
+    border-radius:12px;
+    border:2px solid #ffb6e6;
+    outline:none;
+    font-size:15px;
+    text-align:center;
+    margin-bottom:12px;
+  }
+  input:focus { border-color:#ff5bb5; }
+  button {
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:12px;
+    background: linear-gradient(90deg, #ff5bb5, #ff2d95);
+    color:white;
+    font-weight:700;
+    font-size:16px;
+    cursor:pointer;
+    box-shadow:0 5px 15px rgba(255,45,149,0.4);
+    transition:0.2s;
+  }
+  button:hover { transform: scale(1.02); }
+  .code-display {
+    font-size:28px;
+    letter-spacing:8px;
+    font-weight:700;
+    color:#ff2d95;
+    margin:15px 0;
+    background:white;
+    padding:12px;
+    border-radius:12px;
+  }
+  .footer {
+    margin-top:20px;
+    font-size:12px;
+    color:#ff8ecf;
+  }
+  .badge {
+    display:inline-block;
+    background:#ff5bb5;
+    color:white;
+    padding:4px 12px;
+    border-radius:20px;
+    font-size:11px;
+    margin:3px;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <img src="https://files.catbox.moe/yvgx71.jpg" class="logo" alt="BABY BOT">
+    <h1>🎀 BABY BOT 💗</h1>
+    <div class="sub">WhatsApp Bot | 200 Commands | Baby Method 🧸</div>
+    
+    <div>
+      <span class="badge">👑 15 Owner</span>
+      <span class="badge">👥 40 Group</span>
+      <span class="badge">🛡️ 30 Mod</span>
+      <span class="badge">🤖 30 Auto</span>
+      <span class="badge">🚫 35 Anti</span>
+      <span class="badge">👶 50 Baby</span>
+    </div>
+
+    <div class="box">
+      <p style="color:#ff5bb5; font-weight:600; margin-bottom:10px;">🔐 Get Pair Code</p>
+      <input type="text" id="number" placeholder="2349166265317 (without +)">
+      <button onclick="getCode()">✨ GET CODE 💗</button>
+      <div id="result"></div>
+    </div>
+
+    <div class="box" style="text-align:left; font-size:13px; color:#ff5bb5;">
+      <b>📚 How to link:</b><br>
+            1. Enter number → Get Code<br>
+            2. Open WhatsApp → Linked Devices<br>
+            3. Link with Phone Number → Paste Code<br>
+            4. BABY BOT is online! 🎀
+    </div>
+
+    <div class="footer">
+      Made with 💗 by Simon tech<br>
+      Prefix: . | Total: 200 Commands
+    </div>
+  </div>
+
+<script>
+async function getCode() {
+  const num = document.getElementById('number').value.trim();
+  const resDiv = document.getElementById('result');
+  if (!num) return resDiv.innerHTML = '<p style="color:red">Enter number!</p>';
+  
+  resDiv.innerHTML = '<p style="color:#ff5bb5">🧸 Generating code... 💗</p>';
+  
+  try {
+    const res = await fetch(`/code?number=${num}`);
+    const data = await res.json();
+    if (data.code) {
+      resDiv.innerHTML = `<div class="code-display">${data.code}</div><p style="color:#ff5bb5; font-size:13px;">Copy this code in WhatsApp 🍼</p>`;
+    } else {
+      resDiv.innerHTML = `<p style="color:red">${data.error || 'Failed'}</p>`;
+    }
+  } catch (e) {
+    resDiv.innerHTML = '<p style="color:red">Server not ready yet - Deploy first</p>';
+  }
+}
+</script>
+</body>
+  </html>
