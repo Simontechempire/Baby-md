@@ -1,0 +1,6 @@
+PREFIX=.
+OWNER_NUMBER=2349166265317
+BOT_NAME=BABY BOT
+IMAGE_URL=https://files.catbox.moe/yvgx71.jpg
+SESSION_PATH=./session
+PORT=3000
