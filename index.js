@@ -1,4 +1,4 @@
-// 🎀 BABY BOT - MAIN INDEX | 200 Commands | Baby Method 🧸
+// 🎀 BABY BOT - FINAL INDEX | Baby Method 200 CMDS 🧸💗
 import makeWASocket, { useMultiFileAuthState, DisconnectReason, makeCacheableSignalKeyStore, fetchLatestBaileysVersion } from "@whiskeysockets/baileys";
 import { Boom } from "@hapi/boom";
 import fs from "fs";
@@ -6,6 +6,11 @@ import path from "path";
 import P from "pino";
 import express from "express";
 import { fileURLToPath } from "url";
+
+// 🎀 IMPORT ALL SYSTEMS
+import "./database.js";
+import "./session.js";
+import "./media.js";
 import { getPairCode } from "./connection.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -21,25 +26,25 @@ const SESSION_PATH = "./session";
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 🎀 Keep Alive Server for Render/Railway
-app.get("/", (req, res) => res.send(`🎀 ${BOT_NAME} is Active! 💗 | 200 Commands | Owner: ${OWNER_NUMBER}`));
+// 🎀 SERVER
+app.get("/", (req, res) => res.send(`🎀 ${BOT_NAME} Active! 💗 200 CMDS | Pair: /getcode`));
 app.get("/getcode", (req, res) => res.sendFile(path.join(__dirname, "index.html")));
 
-// 🎀 PAIR CODE ENDPOINT
+// 🎀 PAIR CODE API
 app.get("/code", async (req, res) => {
     const number = req.query.number;
-    if (!number) return res.json({ error: "Provide ?number=234..." });
+    if (!number) return res.json({ error: "Add ?number=234..." });
     try {
         const code = await getPairCode(number);
-        res.json({ code });
+        res.json({ code: code, status: "💗 Check WhatsApp for code" });
     } catch (e) {
-        console.error(e);
         res.json({ error: e.message });
     }
 });
 
-app.listen(PORT, () => console.log(`🎀 BABY BOT Server running on port ${PORT} 💗`));
+app.listen(PORT, () => console.log(`🎀 Server on ${PORT} | Pair at /getcode 💗`));
 
+// 🎀 START BOT
 async function startBabyBot() {
     const { state, saveCreds } = await useMultiFileAuthState(SESSION_PATH);
     const { version } = await fetchLatestBaileysVersion();
@@ -62,26 +67,27 @@ async function startBabyBot() {
         const { connection, lastDisconnect } = update;
         if (connection === "close") {
             const shouldReconnect = (lastDisconnect?.error instanceof Boom ? lastDisconnect.error.output.statusCode !== DisconnectReason.loggedOut : true);
-            console.log("🎀 Connection closed, reconnecting...", shouldReconnect);
+            console.log("🎀 Reconnecting...", shouldReconnect);
             if (shouldReconnect) startBabyBot();
         } else if (connection === "open") {
-            console.log(`💗 ${BOT_NAME} Connected! 200 Commands Loaded! 🍼`);
+            console.log(`💗 ${BOT_NAME} ONLINE! 200 Commands Ready! 🍼`);
         }
     });
 
-    // 🎀 PLUGIN LOADER - 6 MASTER FILES
-    const pluginsPath = path.join(__dirname, "plugins");
-    let plugins = {};
-    
-    if (fs.existsSync(pluginsPath)) {
-        const files = fs.readdirSync(pluginsPath).filter(f => f.endsWith(".js"));
-        for (const file of files) {
-            try {
-                const plugin = await import(`./plugins/${file}?update=${Date.now()}`);
-                plugins[file.replace(".js","").toLowerCase()] = plugin.default || plugin;
-                console.log(`🧸 Loaded: ${file}`);
-            } catch (e) {
-                console.log(`❌ Failed ${file}:`, e.message);
+    // 🎀 PLUGIN LOADER - 6 FOLDERS
+    const plugins = {};
+    const categories = ["Owner","Group","Moderator","Auto","Anti","Baby"];
+    for (const cat of categories) {
+        const catPath = path.join(__dirname, "plugins", cat);
+        plugins[cat.toLowerCase()] = [];
+        if (fs.existsSync(catPath)) {
+            const files = fs.readdirSync(catPath).filter(f => f.endsWith(".js"));
+            for (const file of files) {
+                try {
+                    const plugin = await import(`./plugins/${cat}/${file}?update=${Date.now()}`);
+                    plugins[cat.toLowerCase()].push(plugin.default || plugin);
+                    console.log(`🧸 Loaded: ${cat}/${file}`);
+                } catch (e) { console.log(`❌ ${cat}/${file}: ${e.message}`); }
             }
         }
     }
@@ -90,60 +96,52 @@ async function startBabyBot() {
     sock.ev.on("messages.upsert", async ({ messages }) => {
         const m = messages[0];
         if (!m.message || m.key.fromMe) return;
-        
         const from = m.key.remoteJid;
         const isGroup = from.endsWith("@g.us");
         const type = Object.keys(m.message)[0];
         const body = type === "conversation" ? m.message.conversation : 
-                     type === "extendedTextMessage" ? m.message.extendedTextMessage.text : 
-                     type === "imageMessage" ? m.message.imageMessage.caption || "" : "";
-        
+                     type === "extendedTextMessage" ? m.message.extendedTextMessage.text :
+                     type === "imageMessage" ? m.message.imageMessage.caption || "" : 
+                     type === "videoMessage" ? m.message.videoMessage.caption || "" : "";
         if (!body.startsWith(PREFIX)) return;
-        
+
         const args = body.slice(PREFIX.length).trim().split(/ +/);
         const command = args.shift().toLowerCase();
         const text = args.join(" ");
 
-        try {
-            // 6 MASTER FILES
-            if (plugins.owner) await plugins.owner(sock, m, { command, args, text, from, PREFIX, OWNER_NUMBER, BOT_NAME, IMAGE_URL, isGroup });
-            if (plugins.group) await plugins.group(sock, m, { command, args, text, from, isGroup, PREFIX, OWNER_NUMBER });
-            if (plugins.moderator) await plugins.moderator(sock, m, { command, args, text, from, PREFIX });
-            if (plugins.auto) await plugins.auto(sock, m, { command, args, text, from, PREFIX });
-            if (plugins.anti) await plugins.anti(sock, m, { command, args, text, from, PREFIX });
-            if (plugins.baby) await plugins.baby(sock, m, { command, args, text, from, PREFIX, BOT_NAME, IMAGE_URL });
+        const meta = { command, args, text, from, PREFIX, OWNER_NUMBER, BOT_NAME, IMAGE_URL, isGroup, sock, m };
 
-            // MAIN MENU
-            if (["menu","help","allmenu","babymenu"].includes(command)) {
-                const menu = `🎀 𝐁𝐀𝐁𝐘 𝐁𝐎𝐓 — 𝐅𝐔𝐋𝐋 𝐂𝐌𝐃 𝐌𝐄𝐍𝐔 💗🧸
+        try {
+            for (const h of (plugins.owner||[])) await h(sock, m, meta);
+            for (const h of (plugins.group||[])) await h(sock, m, meta);
+            for (const h of (plugins.moderator||[])) await h(sock, m, meta);
+            for (const h of (plugins.auto||[])) await h(sock, m, meta);
+            for (const h of (plugins.anti||[])) await h(sock, m, meta);
+            for (const h of (plugins.baby||[])) await h(sock, m, meta);
+
+            // 🎀 MAIN MENU
+            if (["menu","help","allmenu"].includes(command)) {
+                const menuText = `🎀 𝐁𝐀𝐁𝐘 𝐁𝐎𝐓 — 𝐅𝐔𝐋𝐋 𝐌𝐄𝐍𝐔 💗🧸
 ╭━━━〔 🎀 𝐁𝐀𝐁𝐘 𝐁𝐎𝐓 🎀 〕━━━╮
-┃ 🧸 Hello, Baby! 💗
-┃ ✨ Welcome to Baby Bot!
-┃ 👑 Owner      │ 15 Commands
-┃ 👥 Group      │ 40 Commands
-┃ 🛡️ Moderator  │ 30 Commands
-┃ 🤖 Auto       │ 30 Commands
-┃ 🚫 Anti       │ 35 Commands
-┃ 👶 Baby        │ 50 Commands
-┃ 📚 Total: 200 Commands
+┃ 🧸 Baby! 💗
+┃ 📚 200 Commands
 ┃ 💗 Prefix: ${PREFIX}
 ╰━━━━━━━━━━━━━━━━━━━━╯
-       💗 𝐌𝐀𝐈𝐍 𝐌𝐄𝐍𝐔 💗
-╭━━━━━━━━━━━━━━━━━━━━╮
-┃ 👑 .ownermenu
-┃ 👥 .groupmenu
-┃ 🛡️ .modmenu
-┃ 🤖 .automenu
-┃ 🚫 .antimenu
-┃ 👶 .babymenu
+╭━━━ 💗 MAIN 💗 ━━━╮
+┃ 👑 .ownermenu - 15
+┃ 👥 .groupmenu - 40
+┃ 🛡️ .modmenu - 30
+┃ 🤖 .automenu - 30
+┃ 🚫 .antimenu - 35
+┃ 👶 .babymenu - 50
 ┃ 📚 .allmenu
-┃ ⚙️ .settings
 ╰━━━━━━━━━━━━━━━━━━━━╯
-🎀 Made with 💗 by Simon tech`;
-                await sock.sendMessage(from, { image: { url: IMAGE_URL }, caption: menu }, { quoted: m });
+🎀 By Simon Tech 💗`;
+                await sock.sendMessage(from, { image: { url: IMAGE_URL }, caption: menuText }, { quoted: m });
             }
+
         } catch (err) {
-            console.error("🎀 Plugin Error:", err);
+            console.error("🎀 Error:", err);
         }
     });
 }
