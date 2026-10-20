@@ -6,6 +6,7 @@ import path from "path";
 import P from "pino";
 import express from "express";
 import { fileURLToPath } from "url";
+import { getPairCode } from "./connection.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -21,9 +22,23 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // 🎀 Keep Alive Server for Render/Railway
-app.get("/", (req, res) => res.send(`🎀 ${BOT_NAME} is Active! 💗 | 200 Commands`));
+app.get("/", (req, res) => res.send(`🎀 ${BOT_NAME} is Active! 💗 | 200 Commands | Owner: ${OWNER_NUMBER}`));
 app.get("/getcode", (req, res) => res.sendFile(path.join(__dirname, "index.html")));
-app.listen(PORT, () => console.log(`🎀 Server running on port ${PORT}`));
+
+// 🎀 PAIR CODE ENDPOINT
+app.get("/code", async (req, res) => {
+    const number = req.query.number;
+    if (!number) return res.json({ error: "Provide ?number=234..." });
+    try {
+        const code = await getPairCode(number);
+        res.json({ code });
+    } catch (e) {
+        console.error(e);
+        res.json({ error: e.message });
+    }
+});
+
+app.listen(PORT, () => console.log(`🎀 BABY BOT Server running on port ${PORT} 💗`));
 
 async function startBabyBot() {
     const { state, saveCreds } = await useMultiFileAuthState(SESSION_PATH);
@@ -43,7 +58,6 @@ async function startBabyBot() {
 
     sock.ev.on("creds.update", saveCreds);
 
-    // 🎀 Connection Handler
     sock.ev.on("connection.update", async (update) => {
         const { connection, lastDisconnect } = update;
         if (connection === "close") {
@@ -51,7 +65,7 @@ async function startBabyBot() {
             console.log("🎀 Connection closed, reconnecting...", shouldReconnect);
             if (shouldReconnect) startBabyBot();
         } else if (connection === "open") {
-            console.log(`💗 ${BOT_NAME} Connected! 200 Commands Loaded!`);
+            console.log(`💗 ${BOT_NAME} Connected! 200 Commands Loaded! 🍼`);
         }
     });
 
@@ -81,7 +95,8 @@ async function startBabyBot() {
         const isGroup = from.endsWith("@g.us");
         const type = Object.keys(m.message)[0];
         const body = type === "conversation" ? m.message.conversation : 
-                     type === "extendedTextMessage" ? m.message.extendedTextMessage.text : "";
+                     type === "extendedTextMessage" ? m.message.extendedTextMessage.text : 
+                     type === "imageMessage" ? m.message.imageMessage.caption || "" : "";
         
         if (!body.startsWith(PREFIX)) return;
         
@@ -89,25 +104,18 @@ async function startBabyBot() {
         const command = args.shift().toLowerCase();
         const text = args.join(" ");
 
-        // 🎀 CALL PLUGINS - All commands cooked inside 6 files
         try {
-            // Owner
-            if (plugins.owner) await plugins.owner(sock, m, { command, args, text, from, PREFIX, OWNER_NUMBER, BOT_NAME, IMAGE_URL });
-            // Group
-            if (plugins.group) await plugins.group(sock, m, { command, args, text, from, isGroup, PREFIX });
-            // Moderator
+            // 6 MASTER FILES
+            if (plugins.owner) await plugins.owner(sock, m, { command, args, text, from, PREFIX, OWNER_NUMBER, BOT_NAME, IMAGE_URL, isGroup });
+            if (plugins.group) await plugins.group(sock, m, { command, args, text, from, isGroup, PREFIX, OWNER_NUMBER });
             if (plugins.moderator) await plugins.moderator(sock, m, { command, args, text, from, PREFIX });
-            // Auto
             if (plugins.auto) await plugins.auto(sock, m, { command, args, text, from, PREFIX });
-            // Anti
             if (plugins.anti) await plugins.anti(sock, m, { command, args, text, from, PREFIX });
-            // Baby (50 fun cmds)
             if (plugins.baby) await plugins.baby(sock, m, { command, args, text, from, PREFIX, BOT_NAME, IMAGE_URL });
 
-            // Main Menu
-            if (command === "menu" || command === "help" || command === "allmenu") {
+            // MAIN MENU
+            if (["menu","help","allmenu","babymenu"].includes(command)) {
                 const menu = `🎀 𝐁𝐀𝐁𝐘 𝐁𝐎𝐓 — 𝐅𝐔𝐋𝐋 𝐂𝐌𝐃 𝐌𝐄𝐍𝐔 💗🧸
-WhatsApp Bot | Baby Method | 200 Commands
 ╭━━━〔 🎀 𝐁𝐀𝐁𝐘 𝐁𝐎𝐓 🎀 〕━━━╮
 ┃ 🧸 Hello, Baby! 💗
 ┃ ✨ Welcome to Baby Bot!
@@ -132,10 +140,8 @@ WhatsApp Bot | Baby Method | 200 Commands
 ┃ ⚙️ .settings
 ╰━━━━━━━━━━━━━━━━━━━━╯
 🎀 Made with 💗 by Simon tech`;
-
                 await sock.sendMessage(from, { image: { url: IMAGE_URL }, caption: menu }, { quoted: m });
             }
-
         } catch (err) {
             console.error("🎀 Plugin Error:", err);
         }
