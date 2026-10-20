@@ -1,0 +1,47 @@
+// 🎀 BABY BOT - SESSION MANAGER | Baby Method 💗🧸
+import fs from "fs";
+import path from "path";
+
+const SESSION_PATH = "./session";
+const CREDS_PATH = path.join(SESSION_PATH, "creds.json");
+
+export function initSession() {
+    if (!fs.existsSync(SESSION_PATH)) {
+        fs.mkdirSync(SESSION_PATH, { recursive: true });
+        console.log("🧸 session/ folder created");
+    }
+    if (!fs.existsSync(CREDS_PATH)) {
+        console.log("🔐 No creds.json yet - Pair with /getcode 💗");
+    } else {
+        console.log("✅ creds.json found - Bot will connect! 🍼");
+    }
+}
+
+export function getSessionStatus() {
+    const exists = fs.existsSync(CREDS_PATH);
+    return {
+        exists,
+        path: CREDS_PATH,
+        size: exists ? fs.statSync(CREDS_PATH).size : 0
+    };
+}
+
+export function deleteSession() {
+    if (fs.existsSync(SESSION_PATH)) {
+        fs.rmSync(SESSION_PATH, { recursive: true, force: true });
+        fs.mkdirSync(SESSION_PATH, { recursive: true });
+        console.log("🧹 Session deleted! Re-pair now 💗");
+        return true;
+    }
+    return false;
+}
+
+export function saveCredsManual(creds) {
+    fs.writeFileSync(CREDS_PATH, JSON.stringify(creds, null, 2));
+    console.log("💾 creds.json saved manually!");
+}
+
+// Auto init on import
+initSession();
+
+export default { initSession, getSessionStatus, deleteSession, saveCredsManual };
