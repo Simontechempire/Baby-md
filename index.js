@@ -1,11 +1,12 @@
-// 🎀 BABY BOT - FULL FINAL WORKING 200 COMMANDS 💗
-import makeWASocket, { useMultiFileAuthState, DisconnectReason, makeCacheableSignalKeyStore, fetchLatestBaileysVersion } from "@whiskeysockets/baileys";
+// 🎀 BABY BOT - FULL FINAL WORKING 200 COMMANDS | OMEGA ZENITH LINK FIX 💗
+import makeWASocket, { useMultiFileAuthState, DisconnectReason, makeCacheableSignalKeyStore, fetchLatestBaileysVersion, Browsers } from "@whiskeysockets/baileys";
 import { Boom } from "@hapi/boom";
 import fs from "fs";
 import path from "path";
 import P from "pino";
 import express from "express";
 import { fileURLToPath } from "url";
+import { getPairCode } from "./connection.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -41,18 +42,16 @@ for(const [cat, files] of Object.entries(PLUGIN_TEMPLATES)){
             const safeName = name.toLowerCase();
             const code = "export default async function(sock, m, meta){ try{ const { command, from } = meta; if(command !== '" + safeName + "') return; await sock.sendMessage(from, { text: '🎀 " + name + " active! 💗' }, { quoted: m }); }catch(e){} }";
             fs.writeFileSync(filePath, code);
-            console.log("🍼 Created: " + cat + "/" + name + ".js");
         }
     }
 }
 
-// 🎀 HTML AUTO CREATE
 const HTML_PATHS = [
     path.join(__dirname, "index.html"),
     path.join(__dirname, "public", "index.html")
 ];
 
-const prettyHTML = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>BABY BOT - Pair Code</title><style>@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap");*{margin:0;padding:0;box-sizing:border-box;font-family:Poppins,sans-serif}body{background:linear-gradient(135deg,#ffb6e6,#ff8ecf,#ff5bb5);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}.card{background:white;border-radius:25px;padding:30px;max-width:400px;width:100%;box-shadow:0 15px 35px rgba(255,91,181,0.3);text-align:center;border:3px solid #ff8ecf}.logo{width:120px;height:120px;border-radius:50%;border:4px solid #ff5bb5;margin:0 auto 15px;object-fit:cover}h1{color:#ff2d95;font-size:28px;font-weight:700;margin-bottom:5px}.sub{color:#ff8ecf;font-size:14px;margin-bottom:20px;font-weight:600}.box{background:#fff0f7;border:2px dashed #ff8ecf;border-radius:15px;padding:15px;margin:15px 0}input{width:100%;padding:14px;border-radius:12px;border:2px solid #ffb6e6;outline:none;font-size:15px;text-align:center;margin-bottom:12px}input:focus{border-color:#ff5bb5}button{width:100%;padding:14px;border:none;border-radius:12px;background:linear-gradient(90deg,#ff5bb5,#ff2d95);color:white;font-weight:700;font-size:16px;cursor:pointer;box-shadow:0 5px 15px rgba(255,45,149,0.4)}button:hover{transform:scale(1.02)}.code-display{font-size:28px;letter-spacing:8px;font-weight:700;color:#ff2d95;margin:15px 0;background:white;padding:12px;border-radius:12px;border:2px solid #ff8ecf}.footer{margin-top:20px;font-size:12px;color:#ff8ecf}.badge{display:inline-block;background:#ff5bb5;color:white;padding:4px 12px;border-radius:20px;font-size:11px;margin:3px}</style></head><body><div class="card"><img src="https://files.catbox.moe/yvgx71.jpg" class="logo" alt="BABY BOT"><h1>BABY BOT</h1><div class="sub">WhatsApp Bot | 200 Commands | Baby Method</div><div><span class="badge">15 Owner</span><span class="badge">40 Group</span><span class="badge">30 Mod</span><span class="badge">30 Auto</span><span class="badge">35 Anti</span><span class="badge">50 Baby</span></div><div class="box"><p style="color:#ff5bb5;font-weight:600;margin-bottom:10px">Get Pair Code</p><input type="text" id="number" placeholder="2349166265317 (without +)"><button onclick="getCode()">GET CODE</button><div id="result"></div></div><div class="box" style="text-align:left;font-size:13px;color:#ff5bb5"><b>How to link:</b><br>1. Enter number -> Get Code<br>2. Open WhatsApp -> Linked Devices<br>3. Link with Phone Number -> Paste Code<br>4. BABY BOT is online!</div><div class="footer">Made with love by Simon tech<br>Prefix: . | Total: 200 Commands</div></div><script>async function getCode(){const num=document.getElementById("number").value.trim();const resDiv=document.getElementById("result");if(!num) return resDiv.innerHTML="<p style=color:red>Enter number!</p>";resDiv.innerHTML="<p style=color:#ff5bb5>Generating code...</p>";try{const res=await fetch("/code?number="+num);const data=await res.json();if(data.code){resDiv.innerHTML="<div class=code-display>"+data.code+"</div><p style=color:#ff5bb5;font-size:13px>Copy this code in WhatsApp</p>";}else{resDiv.innerHTML="<p style=color:red>"+(data.error||"Failed")+"</p>";}}catch(e){resDiv.innerHTML="<p style=color:red>Server not ready</p>";}}</script></body></html>';
+const prettyHTML = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>BABY BOT - Pair Code</title><style>@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap");*{margin:0;padding:0;box-sizing:border-box;font-family:Poppins,sans-serif}body{background:linear-gradient(135deg,#ffb6e6,#ff8ecf,#ff5bb5);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}.card{background:white;border-radius:25px;padding:30px;max-width:400px;width:100%;box-shadow:0 15px 35px rgba(255,91,181,0.3);text-align:center;border:3px solid #ff8ecf}.logo{width:120px;height:120px;border-radius:50%;border:4px solid #ff5bb5;margin:0 auto 15px;object-fit:cover}h1{color:#ff2d95;font-size:28px;font-weight:700;margin-bottom:5px}.sub{color:#ff8ecf;font-size:14px;margin-bottom:20px;font-weight:600}.box{background:#fff0f7;border:2px dashed #ff8ecf;border-radius:15px;padding:15px;margin:15px 0}input{width:100%;padding:14px;border-radius:12px;border:2px solid #ffb6e6;outline:none;font-size:15px;text-align:center;margin-bottom:12px}input:focus{border-color:#ff5bb5}button{width:100%;padding:14px;border:none;border-radius:12px;background:linear-gradient(90deg,#ff5bb5,#ff2d95);color:white;font-weight:700;font-size:16px;cursor:pointer;box-shadow:0 5px 15px rgba(255,45,149,0.4)}button:hover{transform:scale(1.02)}.code-display{font-size:28px;letter-spacing:8px;font-weight:700;color:#ff2d95;margin:15px 0;background:white;padding:12px;border-radius:12px;border:2px solid #ff8ecf}.footer{margin-top:20px;font-size:12px;color:#ff8ecf}.badge{display:inline-block;background:#ff5bb5;color:white;padding:4px 12px;border-radius:20px;font-size:11px;margin:3px}</style></head><body><div class="card"><img src="https://files.catbox.moe/yvgx71.jpg" class="logo" alt="BABY BOT"><h1>BABY BOT</h1><div class="sub">WhatsApp Bot | 200 Commands | Baby Method</div><div><span class="badge">15 Owner</span><span class="badge">40 Group</span><span class="badge">30 Mod</span><span class="badge">30 Auto</span><span class="badge">35 Anti</span><span class="badge">50 Baby</span></div><div class="box"><p style="color:#ff5bb5;font-weight:600;margin-bottom:10px">Get Pair Code</p><input type="text" id="number" placeholder="2349166265317 (without +)"><button onclick="getCode()">GET CODE</button><div id="result"></div></div><div class="box" style="text-align:left;font-size:13px;color:#ff5bb5"><b>How to link:</b><br>1. Enter number -> Get Code<br>2. Open WhatsApp -> Linked Devices<br>3. Link with Phone Number -> Paste Code<br>4. BABY BOT is online!</div><div class="footer">Made with love by Simon tech<br>Prefix: . | Total: 200 Commands</div></div><script>async function getCode(){const num=document.getElementById("number").value.trim();const resDiv=document.getElementById("result");if(!num) return resDiv.innerHTML="<p style=color:red>Enter number!</p>";resDiv.innerHTML="<p style=color:#ff5bb5>Generating code... Please wait</p>";try{const res=await fetch("/code?number="+num);const data=await res.json();if(data.code){resDiv.innerHTML="<div class=code-display>"+data.code+"</div><p style=color:#ff5bb5;font-size:13px>Copy this code in WhatsApp - You have 60 sec!</p>";}else{resDiv.innerHTML="<p style=color:red>"+(data.error||"Failed")+"</p>";}}catch(e){resDiv.innerHTML="<p style=color:red>Server not ready</p>";}}</script></body></html>';
 
 for(const hp of HTML_PATHS){
     if(!fs.existsSync(hp)){
@@ -81,34 +80,55 @@ app.get("/getcode", (req,res)=>{
     res.send(BOT_NAME + " Active! 💗");
 });
 
+// 🎀 FIXED - OMEGA ZENITH PAIR ROUTE
 app.get("/code", async (req,res)=>{
     let number = (req.query.number || "").replace(/[^0-9]/g,"");
     if(!number) return res.json({error:"Add ?number=234..."});
     try{
-        const { state } = await useMultiFileAuthState(SESSION_PATH);
-        const sock = makeWASocket({ logger: P({level:"silent"}), printQRInTerminal:false, auth:{ creds: state.creds, keys: makeCacheableSignalKeyStore(state.keys, P({level:"silent"})) }, browser:["BABY BOT","Chrome","1.0.0"] });
-        await new Promise(r=>setTimeout(r,2000));
-        let code = await sock.requestPairingCode(number);
-        code = code?.match(/.{1,4}/g)?.join("-")||code;
+        const code = await getPairCode(number);
+        if(code === "ALREADY_REGISTERED"){
+            return res.json({code: "ALREADY LINKED ✅ Delete session to re-pair"});
+        }
         res.json({code});
-        setTimeout(()=>{ try{ sock.ws.close(); }catch{} }, 5000);
-    }catch(e){ res.json({error:e.message}); }
+    }catch(e){ 
+        console.log("Pair error:", e.message);
+        res.json({error:e.message}); 
+    }
 });
 
-app.listen(PORT, ()=>console.log("🎀 Server on " + PORT + " - Ready 💗"));
+app.listen(PORT, ()=>console.log("🎀 Server on " + PORT + " - Ready 💗 - OMEGA ZENITH"));
 
 async function startBabyBot(){
     const { state, saveCreds } = await useMultiFileAuthState(SESSION_PATH);
     const { version } = await fetchLatestBaileysVersion();
-    const sock = makeWASocket({ version, logger: P({level:"silent"}), printQRInTerminal:false, auth:{ creds: state.creds, keys: makeCacheableSignalKeyStore(state.keys, P({level:"silent"})) }, browser:["BABY BOT","Chrome","1.0.0"], markOnlineOnConnect:true });
+    const sock = makeWASocket({ 
+        version, 
+        logger: P({level:"silent"}), 
+        printQRInTerminal:false, 
+        auth:{ creds: state.creds, keys: makeCacheableSignalKeyStore(state.keys, P({level:"silent"})) }, 
+        browser: Browsers.macOS("Safari"), // 🎀 ZENITH FIX
+        markOnlineOnConnect:true,
+        connectTimeoutMs: 60000,
+        keepAliveIntervalMs: 10000,
+        syncFullHistory: false
+    });
+
+    global.sock = sock; // 🎀 IMPORTANT FOR connection.js
+
     sock.ev.on("creds.update", saveCreds);
     sock.ev.on("connection.update", async (update)=>{
         const { connection, lastDisconnect } = update;
         if(connection==="close"){
             const shouldReconnect = lastDisconnect?.error instanceof Boom ? lastDisconnect.error.output.statusCode !== DisconnectReason.loggedOut : true;
             if(shouldReconnect) setTimeout(startBabyBot,3000);
+            else {
+                console.log("Logged out - delete auth_sess");
+            }
         }else if(connection==="open"){
-            console.log("💗 " + BOT_NAME + " ONLINE! 🍼");
+            console.log("💗 " + BOT_NAME + " ONLINE! 🍼 OMEGA ZENITH");
+            try{
+                await sock.sendMessage(sock.user.id, { text: `✅ ${BOT_NAME} ONLINE!\nPrefix: ${PREFIX}\n200 Commands Ready!` });
+            }catch{}
         }
     });
     
