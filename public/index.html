@@ -30,16 +30,8 @@
     margin: 0 auto 15px;
     object-fit: cover;
   }
-  h1 {
-    color: #ff2d95;
-    font-size: 28px;
-    font-weight: 700;
-    margin-bottom:5px;
-  }
-  .sub {
-    color:#ff8ecf; font-size:14px; margin-bottom:20px;
-    font-weight:600;
-  }
+  h1 { color: #ff2d95; font-size: 28px; font-weight: 700; margin-bottom:5px; }
+  .sub { color:#ff8ecf; font-size:14px; margin-bottom:20px; font-weight:600; }
   .box {
     background: #fff0f7;
     border: 2px dashed #ff8ecf;
@@ -48,53 +40,27 @@
     margin:15px 0;
   }
   input {
-    width:100%;
-    padding:14px;
-    border-radius:12px;
-    border:2px solid #ffb6e6;
-    outline:none;
-    font-size:15px;
-    text-align:center;
-    margin-bottom:12px;
+    width:100%; padding:14px; border-radius:12px;
+    border:2px solid #ffb6e6; outline:none;
+    font-size:15px; text-align:center; margin-bottom:12px;
   }
   input:focus { border-color:#ff5bb5; }
   button {
-    width:100%;
-    padding:14px;
-    border:none;
-    border-radius:12px;
+    width:100%; padding:14px; border:none; border-radius:12px;
     background: linear-gradient(90deg, #ff5bb5, #ff2d95);
-    color:white;
-    font-weight:700;
-    font-size:16px;
-    cursor:pointer;
-    box-shadow:0 5px 15px rgba(255,45,149,0.4);
-    transition:0.2s;
+    color:white; font-weight:700; font-size:16px;
+    cursor:pointer; box-shadow:0 5px 15px rgba(255,45,149,0.4); transition:0.2s;
   }
   button:hover { transform: scale(1.02); }
   .code-display {
-    font-size:28px;
-    letter-spacing:8px;
-    font-weight:700;
-    color:#ff2d95;
-    margin:15px 0;
-    background:white;
-    padding:12px;
-    border-radius:12px;
+    font-size:28px; letter-spacing:8px; font-weight:700;
+    color:#ff2d95; margin:15px 0; background:white;
+    padding:12px; border-radius:12px; border:2px solid #ff8ecf;
   }
-  .footer {
-    margin-top:20px;
-    font-size:12px;
-    color:#ff8ecf;
-  }
+  .footer { margin-top:20px; font-size:12px; color:#ff8ecf; }
   .badge {
-    display:inline-block;
-    background:#ff5bb5;
-    color:white;
-    padding:4px 12px;
-    border-radius:20px;
-    font-size:11px;
-    margin:3px;
+    display:inline-block; background:#ff5bb5; color:white;
+    padding:4px 12px; border-radius:20px; font-size:11px; margin:3px;
   }
 </style>
 </head>
@@ -139,9 +105,7 @@ async function getCode() {
   const num = document.getElementById('number').value.trim();
   const resDiv = document.getElementById('result');
   if (!num) return resDiv.innerHTML = '<p style="color:red">Enter number!</p>';
-  
   resDiv.innerHTML = '<p style="color:#ff5bb5">🧸 Generating code... 💗</p>';
-  
   try {
     const res = await fetch(`/code?number=${num}`);
     const data = await res.json();
@@ -151,9 +115,9 @@ async function getCode() {
       resDiv.innerHTML = `<p style="color:red">${data.error || 'Failed'}</p>`;
     }
   } catch (e) {
-    resDiv.innerHTML = '<p style="color:red">Server not ready yet - Deploy first</p>';
+    resDiv.innerHTML = '<p style="color:red">Server not ready - Wait 30 sec</p>';
   }
 }
 </script>
 </body>
-  </html>
+</html>
