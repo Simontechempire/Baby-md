@@ -1,4 +1,4 @@
-// 🎀 BABY BOT - ZERO IMPORT ERROR VERSION 💗
+// 🎀 BABY BOT - FIXED SESSION FILE BUG 💗
 import makeWASocket, { useMultiFileAuthState, DisconnectReason, makeCacheableSignalKeyStore, fetchLatestBaileysVersion } from "@whiskeysockets/baileys";
 import { Boom } from "@hapi/boom";
 import fs from "fs";
@@ -10,13 +10,36 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// 🎀 AUTO CREATE EVERYTHING - NO IMPORTS NEEDED
-for (const f of ["session", "media", "database", "plugins", "plugins/Owner", "plugins/Group", "plugins/Moderator", "plugins/Auto", "plugins/Anti", "plugins/Baby"]) {
-    const p = path.join(__dirname, f);
-    if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true });
+// 🎀 FIXED: Delete file if it's not a folder
+function ensureDir(dirPath) {
+    if (fs.existsSync(dirPath)) {
+        try {
+            const stat = fs.statSync(dirPath);
+            if (!stat.isDirectory()) {
+                fs.unlinkSync(dirPath); // DELETE file
+                console.log(`🗑️ Deleted file ${dirPath}`);
+            }
+        } catch {}
+    }
+    if (!fs.existsSync(dirPath)) {
+        fs.mkdirSync(dirPath, { recursive: true });
+        console.log(`📁 Created folder ${dirPath}`);
+    }
 }
 
-// 🎀 INLINE DATABASE - NO database.js NEEDED!
+// 🎀 Use new folder names to avoid old file
+const SESSION_PATH = path.join(__dirname, "auth_sess");
+const MEDIA_PATH = path.join(__dirname, "media");
+
+ensureDir(SESSION_PATH);
+ensureDir(MEDIA_PATH);
+ensureDir(path.join(__dirname, "database"));
+ensureDir(path.join(__dirname, "plugins"));
+for (const c of ["Owner","Group","Moderator","Auto","Anti","Baby"]) {
+    ensureDir(path.join(__dirname, "plugins", c));
+}
+
+// 🎀 INLINE DATABASE
 const DB_PATH = path.join(__dirname, "database", "database.json");
 const DEFAULT_DB = {
   antilink: {}, antibadword: {}, antidelete: {},
@@ -35,23 +58,19 @@ function loadDB() {
         return JSON.parse(fs.readFileSync(DB_PATH, "utf-8"));
     } catch { return DEFAULT_DB; }
 }
-function saveDB(d) {
-    try { fs.writeFileSync(DB_PATH, JSON.stringify(d, null, 2)); } catch {}
-}
+function saveDB(d) { try { fs.writeFileSync(DB_PATH, JSON.stringify(d, null, 2)); } catch {} }
 loadDB();
 
-// 🎀 CONFIG
 const PREFIX = ".";
 const BOT_NAME = "BABY BOT";
 const IMAGE_URL = "https://files.catbox.moe/yvgx71.jpg";
-const SESSION_PATH = path.join(__dirname, "session");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.get("/", (req, res) => res.send(`🎀 ${BOT_NAME} Active! 💗`));
 app.get("/getcode", (req, res) => {
-    res.send(`<html><head><title>Pair</title><style>body{background:#ff69b4;color:white;text-align:center;font-family:sans-serif;padding:50px}input{padding:15px;border-radius:20px;border:none;width:250px}button{padding:15px 30px;border-radius:20px;border:none;background:white;color:#ff69b4;font-weight:bold;margin-top:10px;cursor:pointer}</style></head><body><h1>🎀 BABY BOT PAIR 💗</h1><input id="num" placeholder="2349166265317" /><br><button onclick="getCode()">Get Code 🍼</button><h2 id="code"></h2><script>async function getCode(){document.getElementById('code').innerText='⏳...';let n=document.getElementById('num').value;let r=await fetch('/code?number='+n);let d=await r.json();document.getElementById('code').innerText=d.code||d.error;}</script></body></html>`);
+    res.send(`<html><body style="background:#ff69b4;color:white;text-align:center;padding:50px;font-family:sans-serif"><h1>🎀 BABY BOT PAIR 💗</h1><input id="num" placeholder="2349166265317" style="padding:15px;border-radius:20px;border:none;width:250px"/><br><br><button onclick="getCode()" style="padding:15px 30px;border-radius:20px;border:none;background:white;color:#ff69b4;font-weight:bold">Get Code</button><h2 id="code"></h2><script>async function getCode(){document.getElementById('code').innerText='⏳...';let n=document.getElementById('num').value;let r=await fetch('/code?number='+n);let d=await r.json();document.getElementById('code').innerText=d.code||d.error;}</script></body></html>`);
 });
 
 app.get("/code", async (req, res) => {
